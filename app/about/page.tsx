@@ -108,7 +108,7 @@ export default function AboutPage() {
 
             <div className="relative">
               <Image
-                src="/about.png?height=600&width=500"
+                src="/about.png" // Ensure 'about.png' exists in your /public directory
                 alt="Sunrise Edu Group Campus"
                 width={500}
                 height={600}

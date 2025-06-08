@@ -15,20 +15,34 @@ export default function HorizontalCarousel() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [news, setNews] = useState<News[]>([])
   const [isLoading, setIsLoading] = useState(true)
-
-  const itemsPerView = {
-    mobile: 1,
-    tablet: 2,
-    desktop: 3,
-  }
+  const [visibleItems, setVisibleItems] = useState(3) // Default to desktop
 
   useEffect(() => {
+    // Function to determine visible items based on screen width
+    const getItemsPerView = () => {
+      if (typeof window !== "undefined") {
+        if (window.innerWidth < 768) return 1 // Mobile
+        if (window.innerWidth < 1024) return 2 // Tablet
+      }
+      return 3 // Desktop
+    }
+
+    // Set initial visible items
+    setVisibleItems(getItemsPerView())
+
+    // Update on resize
+    const handleResize = () => {
+      setVisibleItems(getItemsPerView())
+      setCurrentIndex(0) // Reset index on resize to avoid layout issues
+    }
+
+    window.addEventListener("resize", handleResize)
     loadNews()
+    return () => window.removeEventListener("resize", handleResize)
   }, [])
 
   async function loadNews() {
     try {
-      setIsLoading(true)
       const data = await getPublishedNews()
       setNews(data)
     } catch (error) {
@@ -39,25 +53,27 @@ export default function HorizontalCarousel() {
   }
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + itemsPerView.desktop >= news.length ? 0 : prevIndex + 1))
+    if (news.length === 0 || news.length <= visibleItems) return
+    setCurrentIndex((prevIndex) => (prevIndex >= news.length - visibleItems ? 0 : prevIndex + 1))
   }
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? Math.max(0, news.length - itemsPerView.desktop) : prevIndex - 1,
-    )
+    if (news.length === 0 || news.length <= visibleItems) return
+    setCurrentIndex((prevIndex) => (prevIndex <= 0 ? Math.max(0, news.length - visibleItems) : prevIndex - 1))
   }
 
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index)
+  const goToSlide = (slideIndex: number) => {
+    // slideIndex here refers to the index of the dot, which is the desired currentIndex
+    if (news.length === 0) return
+    setCurrentIndex(slideIndex)
   }
 
   useEffect(() => {
-    if (isAutoPlaying && news.length > itemsPerView.desktop) {
+    if (isAutoPlaying && news.length > visibleItems) {
       const interval = setInterval(nextSlide, 5000)
       return () => clearInterval(interval)
     }
-  }, [isAutoPlaying, currentIndex, news.length])
+  }, [isAutoPlaying, currentIndex, news.length, visibleItems])
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -98,6 +114,7 @@ export default function HorizontalCarousel() {
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
             className="h-10 w-10"
+            disabled={news.length <= visibleItems}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -108,6 +125,7 @@ export default function HorizontalCarousel() {
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
             className="h-10 w-10"
+            disabled={news.length <= visibleItems}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -123,11 +141,17 @@ export default function HorizontalCarousel() {
         <div
           className="flex transition-transform duration-500 ease-in-out"
           style={{
-            transform: `translateX(-${currentIndex * (100 / itemsPerView.desktop)}%)`,
+            transform: `translateX(-${currentIndex * (100 / visibleItems)}%)`,
           }}
         >
           {news.map((item) => (
-            <div key={item.id} className="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
+            <div
+              key={item.id}
+              className="flex-shrink-0 px-3"
+              style={{
+                flexBasis: `calc(100% / ${visibleItems})`,
+                minWidth: `calc(100% / ${visibleItems})`,
+              }}>
               <Card className="group hover:shadow-xl transition-all duration-300 h-full">
                 <div className="relative overflow-hidden">
                   <Image
@@ -166,27 +190,27 @@ export default function HorizontalCarousel() {
         </div>
       </div>
 
-      {/* Pagination Dots */}
-      <div className="flex justify-center mt-8 space-x-2">
-        {Array.from({ length: Math.ceil(news.length / itemsPerView.desktop) }).map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              Math.floor(currentIndex / itemsPerView.desktop) === index
-                ? "bg-orange-600 w-8"
-                : "bg-gray-300 hover:bg-gray-400"
-            }`}
-          />
-        ))}
-      </div>
+      {/* Pagination Dots - only show if there's more than one "page" */}
+      {news.length > visibleItems && (
+        <div className="flex justify-center mt-8 space-x-2">
+          {Array.from({ length: news.length - visibleItems + 1 }).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                currentIndex === index ? "bg-orange-600 w-6" : "bg-gray-300 hover:bg-gray-400"
+              }`}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Progress Bar */}
       <div className="w-full bg-gray-200 rounded-full h-1 mt-4">
         <div
           className="bg-gradient-to-r from-orange-600 to-blue-600 h-1 rounded-full transition-all duration-300"
           style={{
-            width: `${((currentIndex + itemsPerView.desktop) / news.length) * 100}%`,
+            width: news.length > 0 ? `${Math.min(100, ((currentIndex + visibleItems) / news.length) * 100)}%` : '0%',
           }}
         />
       </div>
