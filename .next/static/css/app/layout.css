@@ -4334,8 +4334,16 @@ body {
     display: flex;
   }
 
+  .md\:h-12 {
+    height: 3rem;
+  }
+
   .md\:h-\[450px\] {
     height: 450px;
+  }
+
+  .md\:w-12 {
+    width: 3rem;
   }
 
   .md\:w-\[var\(--radix-navigation-menu-viewport-width\)\] {
@@ -4368,6 +4376,12 @@ body {
 
   .md\:items-center {
     align-items: center;
+  }
+
+  .md\:space-x-3 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 0;
+    margin-right: calc(0.75rem * var(--tw-space-x-reverse));
+    margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)));
   }
 
   .md\:py-16 {
@@ -4408,6 +4422,11 @@ body {
   .md\:text-xl {
     font-size: 1.25rem;
     line-height: 1.75rem;
+  }
+
+  .md\:text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
   }
 
   .md\:opacity-0 {

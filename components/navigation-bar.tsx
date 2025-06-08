@@ -12,8 +12,8 @@ export function NavigationBar() {
     <header className="fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-orange-500/20 backdrop-blur-sm bg-white/90 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-12 h-12 transition-transform group-hover:scale-105">
+          <Link href="/" className="flex items-center space-x-2 md:space-x-3 group">
+            <div className="w-10 h-10 md:w-12 md:h-12 transition-transform group-hover:scale-105">
               <img
                 src="/logo.png"
                 alt="Sunrise Edu Group Logo"
@@ -21,10 +21,10 @@ export function NavigationBar() {
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+              <h1 className="text-lg md:text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors leading-tight">
                 Sunrise Edu Group
               </h1>
-              <p className="text-xs text-orange-600">School | College | Coachings</p>
+              <p className="text-[10px] md:text-xs text-orange-600">School | College | Coachings</p>
             </div>
           </Link>
 
