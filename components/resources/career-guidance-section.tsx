@@ -1,158 +1,166 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Users,
-  GraduationCap,
-  TrendingUp,
-  BookOpen,
-  Target,
-  Search,
-  Play,
-  Download,
-  ExternalLink,
-  Star,
-  Clock,
-  Eye,
+import { Input } from "@/components/ui/input"
+import { Database } from '@/lib/supabase/types'
+import { ResourceDialog } from "./resource-dialog"
+import { 
+  BookOpen, Calendar, Play, TrendingUp, Building, Award,
+  Users, Target, Heart, Globe, Search, Eye, Star, 
+  Clock, Download, ExternalLink, Edit, Trash2, GraduationCap
 } from "lucide-react"
 import Image from "next/image"
+import { 
+  fetchCareerResources, 
+  createCareerResource, 
+  updateCareerResource, 
+  deleteCareerResource 
+} from '@/lib/supabase/career-resource-queries'
+import { toast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
-interface CareerResource {
-  id: number
-  title: string
-  description: string
-  category: string
-  type: "article" | "video" | "guide" | "tool" | "webinar"
-  duration?: string
-  views: number
-  rating: number
-  difficulty: "Beginner" | "Intermediate" | "Advanced"
-  tags: string[]
-  thumbnail: string
-  author: string
-  publishDate: string
-  downloadUrl?: string
-  externalUrl?: string
+type CareerResource = Database['public']['Tables']['career_resources']['Row']
+type NewCareerResource = Omit<CareerResource, 'id' | 'created_at' | 'views' | 'rating'> & {
+  views?: number;
+  rating?: number;
 }
 
-const careerResources: CareerResource[] = [
-  {
-    id: 1,
-    title: "Complete Guide to Engineering Careers",
-    description: "Comprehensive guide covering all engineering branches, career prospects, and admission requirements",
-    category: "Engineering",
-    type: "guide",
-    duration: "45 min read",
-    views: 15420,
-    rating: 4.8,
-    difficulty: "Beginner",
-    tags: ["Engineering", "Career Planning", "Admissions"],
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    author: "Dr. Rajesh Kumar",
-    publishDate: "2024-03-15",
-    downloadUrl: "/guides/engineering-careers.pdf",
-  },
-  {
-    id: 2,
-    title: "Medical Career Pathways After 12th",
-    description: "Explore various medical career options including MBBS, BDS, BAMS, and allied health sciences",
-    category: "Medical",
-    type: "video",
-    duration: "25 minutes",
-    views: 12890,
-    rating: 4.9,
-    difficulty: "Beginner",
-    tags: ["Medical", "NEET", "Healthcare"],
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    author: "Dr. Priya Sharma",
-    publishDate: "2024-03-12",
-    externalUrl: "https://youtube.com/watch?v=example",
-  },
-  {
-    id: 3,
-    title: "Career Assessment Tool",
-    description: "Interactive tool to discover your interests, skills, and suitable career options",
-    category: "Assessment",
-    type: "tool",
-    views: 8750,
-    rating: 4.6,
-    difficulty: "Beginner",
-    tags: ["Assessment", "Self Discovery", "Career Planning"],
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    author: "Career Counseling Team",
-    publishDate: "2024-03-10",
-    externalUrl: "/tools/career-assessment",
-  },
-  {
-    id: 4,
-    title: "Commerce Stream Career Options",
-    description: "Detailed overview of career opportunities in commerce including CA, CS, CMA, and management",
-    category: "Commerce",
-    type: "article",
-    duration: "20 min read",
-    views: 9650,
-    rating: 4.7,
-    difficulty: "Intermediate",
-    tags: ["Commerce", "Business", "Finance"],
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    author: "Prof. Amit Agarwal",
-    publishDate: "2024-03-08",
-    downloadUrl: "/guides/commerce-careers.pdf",
-  },
-  {
-    id: 5,
-    title: "Arts & Humanities Career Webinar",
-    description: "Live webinar discussing diverse career paths in arts, literature, psychology, and social sciences",
-    category: "Arts",
-    type: "webinar",
-    duration: "60 minutes",
-    views: 5420,
-    rating: 4.5,
-    difficulty: "Intermediate",
-    tags: ["Arts", "Humanities", "Creative Careers"],
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    author: "Dr. Sunita Meena",
-    publishDate: "2024-03-05",
-    externalUrl: "/webinars/arts-careers",
-  },
-  {
-    id: 6,
-    title: "Scholarship and Financial Aid Guide",
-    description: "Complete guide to scholarships, grants, and financial aid for higher education",
-    category: "Financial Aid",
-    type: "guide",
-    duration: "30 min read",
-    views: 11200,
-    rating: 4.8,
-    difficulty: "Beginner",
-    tags: ["Scholarships", "Financial Aid", "Education Funding"],
-    thumbnail: "/placeholder.svg?height=200&width=300",
-    author: "Financial Aid Office",
-    publishDate: "2024-03-03",
-    downloadUrl: "/guides/scholarships.pdf",
-  },
-]
+type CareerResource = Database['public']['Tables']['career_resources']['Row']
+type NewCareerResource = Omit<CareerResource, 'id' | 'created_at' | 'views' | 'rating'> & {
+  views?: number;
+  rating?: number;
+}
+
+const initialCareerResources: CareerResource[] = [];
 
 const careerCategories = [
-  { name: "Engineering", icon: "⚙️", count: 45 },
-  { name: "Medical", icon: "🏥", count: 32 },
-  { name: "Commerce", icon: "💼", count: 28 },
-  { name: "Arts", icon: "🎨", count: 24 },
-  { name: "Science", icon: "🔬", count: 38 },
-  { name: "Technology", icon: "💻", count: 42 },
+  { name: "Engineering", icon: "⚙️", count: 0 },
+  { name: "Medical", icon: "🏥", count: 0 },
+  { name: "Commerce", icon: "💼", count: 0 },
+  { name: "Arts", icon: "🎨", count: 0 },
+  { name: "Science", icon: "🔬", count: 0 },
+  { name: "Technology", icon: "💻", count: 0 }
 ]
 
 export default function CareerGuidanceSection() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedType, setSelectedType] = useState("all")
+  const [selectedType, setSelectedType] = useState<CareerResource['type'] | 'all'>("all")
+  const [allResources, setAllResources] = useState<CareerResource[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingResource, setEditingResource] = useState<CareerResource | undefined>()
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [resourceToDelete, setResourceToDelete] = useState<CareerResource | null>(null)
 
-  const filteredResources = careerResources.filter((resource) => {
+  const handleCreateResource = async (newResource: NewCareerResource) => {
+    try {
+      const created = await createCareerResource({
+        ...newResource,
+        views: 0,
+        rating: 0
+      })
+      setAllResources(prevResources => [created, ...prevResources])
+      toast({
+        title: "Success",
+        description: "Resource created successfully"
+      })
+    } catch (error) {
+      console.error('Error creating resource:', error)
+      toast({
+        title: "Error",
+        description: "Failed to create resource. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleUpdateResource = async (id: string, updatedFields: Partial<CareerResource>) => {
+    try {
+      const updated = await updateCareerResource(id, updatedFields)
+      setAllResources(prevResources => 
+        prevResources.map(resource => 
+          resource.id === id ? { ...resource, ...updated } : resource
+        )
+      )
+      toast({
+        title: "Success",
+        description: "Resource updated successfully"
+      })
+    } catch (error) {
+      console.error('Error updating resource:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update resource. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleDeleteResource = async (id: string) => {
+    try {
+      await deleteCareerResource(id)
+      setAllResources(prevResources => prevResources.filter(resource => resource.id !== id))
+      toast({
+        title: "Success",
+        description: "Resource deleted successfully"
+      })
+    } catch (error) {
+      console.error('Error deleting resource:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete resource. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (resourceToDelete) {
+      await handleDeleteResource(resourceToDelete.id)
+      setResourceToDelete(null)
+      setIsDeleteDialogOpen(false)
+    }
+  }
+
+  const openDeleteDialog = (resource: CareerResource) => {
+    setResourceToDelete(resource)
+    setIsDeleteDialogOpen(true)
+  }
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const data = await fetchCareerResources()
+        setAllResources(data)
+      } catch (err) {
+        setError("Failed to load career resources. Please try again later.")
+        console.error(err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  // Filter resources based on search and category
+  const filteredResources = allResources.filter((resource) => {
     const matchesSearch =
       resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -210,8 +218,51 @@ export default function CareerGuidanceSection() {
     }
   }
 
+  const handleResourceSubmit = async (formData: NewCareerResource) => {
+    if (editingResource) {
+      await handleUpdateResource(editingResource.id, formData)
+    } else {
+      await handleCreateResource(formData)
+    }
+    setIsDialogOpen(false)
+    setEditingResource(undefined)
+  }
+
+  if (isLoading) {
+    return <div className="container mx-auto px-4 py-20 text-center">Loading career resources...</div>;
+  }
+
+  if (error) {
+    return <div className="container mx-auto px-4 py-20 text-center text-red-600">{error}</div>;
+  }
+
   return (
     <section className="py-20 bg-gray-50">
+      <ResourceDialog 
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        resource={editingResource}
+        onSubmit={handleResourceSubmit}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Resource</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{resourceToDelete?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <Badge className="bg-green-100 text-green-800 border-green-200 mb-4">🎯 Career Guidance</Badge>
@@ -219,6 +270,17 @@ export default function CareerGuidanceSection() {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Comprehensive career guidance resources to help you make informed decisions about your future
           </p>
+          <div className="mt-6">
+            <Button 
+              onClick={() => {
+                setEditingResource(undefined)
+                setIsDialogOpen(true)
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Add New Resource
+            </Button>
+          </div>
         </div>
 
         {/* Career Categories */}
@@ -282,7 +344,7 @@ export default function CareerGuidanceSection() {
                 <Card key={resource.id} className="group hover:shadow-xl transition-all duration-300">
                   <div className="relative overflow-hidden">
                     <Image
-                      src={resource.thumbnail || "/placeholder.svg"}
+                      src={resource.thumbnail_url || "/placeholder.svg"}
                       alt={resource.title}
                       width={300}
                       height={200}
@@ -340,17 +402,36 @@ export default function CareerGuidanceSection() {
                     <div className="flex items-center justify-between pt-2 border-t">
                       <div className="text-xs text-gray-500">By {resource.author}</div>
                       <div className="flex space-x-2">
-                        {resource.downloadUrl && (
+                        {resource.download_url && (
                           <Button size="sm" variant="outline">
                             <Download className="w-4 h-4" />
                           </Button>
                         )}
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-orange-600 hover:text-orange-700"
+                          onClick={() => {
+                            setEditingResource(resource)
+                            setIsDialogOpen(true)
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => openDeleteDialog(resource)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                         <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                          {resource.externalUrl ? (
-                            <>
+                          {resource.external_url ? (
+                            <a href={resource.external_url} target="_blank" rel="noopener noreferrer" className="flex items-center">
                               <ExternalLink className="w-4 h-4 mr-2" />
                               View
-                            </>
+                            </a>
                           ) : (
                             <>
                               <BookOpen className="w-4 h-4 mr-2" />
@@ -376,7 +457,7 @@ export default function CareerGuidanceSection() {
                     <Card key={resource.id} className="group hover:shadow-xl transition-all duration-300">
                       <div className="relative overflow-hidden">
                         <Image
-                          src={resource.thumbnail || "/placeholder.svg"}
+                          src={resource.thumbnail_url || "/placeholder.svg"}
                           alt={resource.title}
                           width={300}
                           height={200}
@@ -423,17 +504,36 @@ export default function CareerGuidanceSection() {
                         <div className="flex items-center justify-between pt-2 border-t">
                           <div className="text-xs text-gray-500">By {resource.author}</div>
                           <div className="flex space-x-2">
-                            {resource.downloadUrl && (
+                            {resource.download_url && (
                               <Button size="sm" variant="outline">
                                 <Download className="w-4 h-4" />
                               </Button>
                             )}
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-orange-600 hover:text-orange-700"
+                              onClick={() => {
+                                setEditingResource(resource)
+                                setIsDialogOpen(true)
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => openDeleteDialog(resource)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                             <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                              {resource.externalUrl ? (
-                                <>
+                              {resource.external_url ? (
+                                <a href={resource.external_url} target="_blank" rel="noopener noreferrer" className="flex items-center">
                                   <ExternalLink className="w-4 h-4 mr-2" />
                                   View
-                                </>
+                                </a>
                               ) : (
                                 <>
                                   <BookOpen className="w-4 h-4 mr-2" />

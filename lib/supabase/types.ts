@@ -166,54 +166,56 @@ export type Database = {
           title: string
           description: string
           category: string
-          type: "article" | "video" | "guide" | "webinar"
+          type: "article" | "video" | "guide" | "tool" | "webinar"
           duration: string | null
-          difficulty: "beginner" | "intermediate" | "advanced"
-          tags: string[]
-          thumbnail_url: string | null
-          author: string | null
-          content: string | null
           views: number
           rating: number
-          status: "active" | "inactive"
+          difficulty: "Beginner" | "Intermediate" | "Advanced"
+          tags: string[]
+          thumbnail_url: string | null
+          author: string
+          download_url: string | null
+          external_url: string | null
+          content: string | null
+          status: "active" | "deleted"
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
           title: string
           description: string
           category: string
-          type: "article" | "video" | "guide" | "webinar"
+          type: "article" | "video" | "guide" | "tool" | "webinar"
           duration?: string | null
-          difficulty?: "beginner" | "intermediate" | "advanced"
-          tags?: string[]
-          thumbnail_url?: string | null
-          author?: string | null
-          content?: string | null
           views?: number
           rating?: number
-          status?: "active" | "inactive"
+          difficulty: "Beginner" | "Intermediate" | "Advanced"
+          tags: string[]
+          thumbnail_url?: string | null
+          author: string
+          download_url?: string | null
+          external_url?: string | null
+          content?: string | null
+          status?: "active" | "deleted"
           created_at?: string
-          updated_at?: string
         }
         Update: {
-          id?: string
           title?: string
           description?: string
           category?: string
-          type?: "article" | "video" | "guide" | "webinar"
+          type?: "article" | "video" | "guide" | "tool" | "webinar"
           duration?: string | null
-          difficulty?: "beginner" | "intermediate" | "advanced"
-          tags?: string[]
-          thumbnail_url?: string | null
-          author?: string | null
-          content?: string | null
           views?: number
           rating?: number
-          status?: "active" | "inactive"
+          difficulty?: "Beginner" | "Intermediate" | "Advanced"
+          tags?: string[]
+          thumbnail_url?: string | null
+          author?: string
+          download_url?: string | null
+          external_url?: string | null
+          content?: string | null
+          status?: "active" | "deleted"
           created_at?: string
-          updated_at?: string
         }
       }
       quick_updates: {
@@ -327,14 +329,6 @@ export type Database = {
           updated_at?: string
         }
       }
-    }
-  }
-}
-
-export type Achiever = Database["public"]["Tables"]["achievers"]["Row"]
-export type Paper = Database["public"]["Tables"]["papers"]["Row"]
-export type CareerResource = Database["public"]["Tables"]["career_resources"]["Row"]
-export type QuickUpdate = Database["public"]["Tables"]["quick_updates"]["Row"]
       news: {
         Row: {
           id: string
@@ -380,7 +374,14 @@ export type QuickUpdate = Database["public"]["Tables"]["quick_updates"]["Row"]
         }
       }
 
+export type Achiever = Database["public"]["Tables"]["achievers"]["Row"]
+export type Paper = Database["public"]["Tables"]["papers"]["Row"]
+export type CareerResource = Database["public"]["Tables"]["career_resources"]["Row"]
+export type NewCareerResource = Database["public"]["Tables"]["career_resources"]["Insert"]
+export type QuickUpdate = Database["public"]["Tables"]["quick_updates"]["Row"]
 export type Institution = Database["public"]["Tables"]["institutions"]["Row"]
 export type MediaItem = Database["public"]["Tables"]["media_gallery"]["Row"]
 export type CarouselImage = Database["public"]["Tables"]["carousel_images"]["Row"]
 export type News = Database["public"]["Tables"]["news"]["Row"]
+
+export interface CareerResource extends Database['public']['Tables']['career_resources']['Row'] {}

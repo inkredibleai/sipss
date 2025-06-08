@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // Added useEffect
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FileText, Download, Search, Calendar, Star, Clock, Award } from "lucide-react"
 
 interface MockPaper {
-  id: number
+  id: string // Changed to string for UUID
   title: string
   subject: string
   class: string
@@ -24,113 +24,86 @@ interface MockPaper {
   difficulty: "Easy" | "Medium" | "Hard"
   fileSize: string
   uploadDate: string
-  description: string
+  description: string | null
+  file_url: string // Added to match potential Supabase schema
+  created_at: string // Added from schema
 }
 
-const mockPapers: MockPaper[] = [
-  {
-    id: 1,
-    title: "Mathematics Mock Test - 1",
-    subject: "Mathematics",
-    class: "12",
-    year: "2024",
-    type: "mock",
-    board: "CBSE",
-    duration: "3 hours",
-    marks: 80,
-    downloads: 1250,
-    rating: 4.8,
-    difficulty: "Medium",
-    fileSize: "2.4 MB",
-    uploadDate: "2024-03-15",
-    description: "Comprehensive mathematics mock test covering all chapters",
-  },
-  {
-    id: 2,
-    title: "Physics Previous Year Paper",
-    subject: "Physics",
-    class: "12",
-    year: "2023",
-    type: "past",
-    board: "CBSE",
-    duration: "3 hours",
-    marks: 70,
-    downloads: 2100,
-    rating: 4.9,
-    difficulty: "Hard",
-    fileSize: "1.8 MB",
-    uploadDate: "2024-03-12",
-    description: "CBSE Class 12 Physics board exam paper 2023",
-  },
-  {
-    id: 3,
-    title: "Chemistry Sample Paper",
-    subject: "Chemistry",
-    class: "11",
-    year: "2024",
-    type: "mock",
-    board: "CBSE",
-    duration: "3 hours",
-    marks: 70,
-    downloads: 890,
-    rating: 4.6,
-    difficulty: "Medium",
-    fileSize: "2.1 MB",
-    uploadDate: "2024-03-10",
-    description: "Latest chemistry sample paper with solutions",
-  },
-  {
-    id: 4,
-    title: "Biology Mock Test Series",
-    subject: "Biology",
-    class: "12",
-    year: "2024",
-    type: "mock",
-    board: "CBSE",
-    duration: "3 hours",
-    marks: 70,
-    downloads: 1560,
-    rating: 4.7,
-    difficulty: "Easy",
-    fileSize: "3.2 MB",
-    uploadDate: "2024-03-08",
-    description: "Complete biology mock test with detailed explanations",
-  },
-  {
-    id: 5,
-    title: "English Core Previous Year",
-    subject: "English",
-    class: "12",
-    year: "2023",
-    type: "past",
-    board: "CBSE",
-    duration: "3 hours",
-    marks: 80,
-    downloads: 1890,
-    rating: 4.5,
-    difficulty: "Medium",
-    fileSize: "1.5 MB",
-    uploadDate: "2024-03-05",
-    description: "CBSE English Core board exam paper with marking scheme",
-  },
-  {
-    id: 6,
-    title: "Computer Science Mock",
-    subject: "Computer Science",
-    class: "11",
-    year: "2024",
-    type: "mock",
-    board: "CBSE",
-    duration: "3 hours",
-    marks: 70,
-    downloads: 720,
-    rating: 4.4,
-    difficulty: "Hard",
-    fileSize: "2.8 MB",
-    uploadDate: "2024-03-03",
-    description: "Programming and theory based computer science mock test",
-  },
-]
+// Mock initial data - this will be replaced by API call
+const initialMockPapers: MockPaper[] = [
+  // {
+  //   id: "1",
+  //   title: "Mathematics Mock Test - 1",
+  //   subject: "Mathematics",
+  //   class: "12",
+  //   year: "2024",
+  //   type: "mock",
+  //   board: "CBSE",
+  //   duration: "3 hours",
+  //   marks: 80,
+  //   downloads: 1250,
+  //   rating: 4.8,
+  //   difficulty: "Medium",
+  //   fileSize: "2.4 MB",
+  //   uploadDate: "2024-03-15",
+  //   description: "Comprehensive mathematics mock test covering all chapters",
+  //   file_url: "/papers/math-mock-1.pdf",
+  //   created_at: "2024-03-15T10:00:00Z",
+  // },
+];
+
+// Mock Supabase query function (replace with actual Supabase call)
+// This would typically be in a file like @/lib/supabase/queries.ts
+async function fetchMockPapersFromDB(): Promise<MockPaper[]> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  // In a real app, this would be:
+  // const { data, error } = await supabase.from('mock_papers').select('*').eq('status', 'active'); // Assuming a 'status' column
+  // if (error) throw error;
+  // return data.map(item => ({ ...item, uploadDate: item.created_at })) as MockPaper[];
+
+  // Return mock data for now
+  return [
+    {
+      id: "1",
+      title: "Mathematics Mock Test - 1 (Fetched)",
+      subject: "Mathematics",
+      class: "12",
+      year: "2024",
+      type: "mock",
+      board: "CBSE",
+      duration: "3 hours",
+      marks: 80,
+      downloads: 1250,
+      rating: 4.8,
+      difficulty: "Medium",
+      fileSize: "2.4 MB",
+      uploadDate: "2024-03-15", // Mapped from created_at
+      description: "Comprehensive mathematics mock test covering all chapters",
+      file_url: "/papers/math-mock-1.pdf",
+      created_at: "2024-03-15T10:00:00Z",
+    },
+    {
+      id: "2",
+      title: "Physics Previous Year Paper (Fetched)",
+      subject: "Physics",
+      class: "12",
+      year: "2023",
+      type: "past",
+      board: "CBSE",
+      duration: "3 hours",
+      marks: 70,
+      downloads: 2100,
+      rating: 4.9,
+      difficulty: "Hard",
+      fileSize: "1.8 MB",
+      uploadDate: "2024-03-12", // Mapped from created_at
+      description: "CBSE Class 12 Physics board exam paper 2023",
+      file_url: "/papers/physics-2023.pdf",
+      created_at: "2024-03-12T10:00:00Z",
+    },
+  ];
+}
 
 export default function MockPapersSection() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -139,6 +112,9 @@ export default function MockPapersSection() {
   const [selectedYear, setSelectedYear] = useState("all")
   const [selectedType, setSelectedType] = useState("all")
   const [selectedBoard, setSelectedBoard] = useState("all")
+  const [allMockPapers, setAllMockPapers] = useState<MockPaper[]>(initialMockPapers)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const classes = ["6", "7", "8", "9", "10", "11", "12"]
   const subjects = [
@@ -154,7 +130,26 @@ export default function MockPapersSection() {
   const years = ["2024", "2023", "2022", "2021", "2020"]
   const boards = ["CBSE", "RBSE", "ICSE"]
 
-  const filteredPapers = mockPapers.filter((paper) => {
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const data = await fetchMockPapersFromDB()
+        // Map created_at to uploadDate for display consistency if needed
+        const mappedData = data.map(item => ({ ...item, uploadDate: new Date(item.created_at).toLocaleDateString() }));
+        setAllMockPapers(mappedData)
+      } catch (err) {
+        setError("Failed to load mock papers. Please try again later.")
+        console.error(err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  const filteredPapers = allMockPapers.filter((paper) => {
     const matchesSearch =
       paper.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       paper.subject.toLowerCase().includes(searchTerm.toLowerCase())
@@ -184,6 +179,14 @@ export default function MockPapersSection() {
     return type === "mock" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"
   }
 
+  if (isLoading) {
+    return <div className="container mx-auto px-4 py-20 text-center">Loading mock papers...</div>;
+  }
+
+  if (error) {
+    return <div className="container mx-auto px-4 py-20 text-center text-red-600">{error}</div>;
+  }
+
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -191,7 +194,7 @@ export default function MockPapersSection() {
           <Badge className="bg-blue-100 text-blue-800 border-blue-200 mb-4">📄 Mock & Past Papers</Badge>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Free Question Papers</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Download thousands of mock tests and previous year question papers for CBSE, RBSE, and other boards
+            Download thousands of mock tests and previous year question papers
           </p>
         </div>
 
@@ -294,7 +297,11 @@ export default function MockPapersSection() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-sm text-gray-600 line-clamp-2">{paper.description}</p>
+                    {paper.description && (
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {paper.description}
+                      </p>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center">
@@ -326,10 +333,12 @@ export default function MockPapersSection() {
                           <span>{paper.rating}</span>
                         </div>
                       </div>
-                      <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </Button>
+                      <a href={paper.file_url} target="_blank" rel="noopener noreferrer">
+                        <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </Button>
+                      </a>
                     </div>
                   </CardContent>
                 </Card>
@@ -357,7 +366,11 @@ export default function MockPapersSection() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="text-sm text-gray-600 line-clamp-2">{paper.description}</p>
+                      {paper.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {paper.description}
+                        </p>
+                      )}
 
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center">
@@ -381,10 +394,12 @@ export default function MockPapersSection() {
                             <span>{paper.rating}</span>
                           </div>
                         </div>
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </Button>
+                        <a href={paper.file_url} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                            <Download className="w-4 h-4 mr-2" />
+                            Download
+                          </Button>
+                        </a>
                       </div>
                     </CardContent>
                   </Card>
@@ -412,7 +427,11 @@ export default function MockPapersSection() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="text-sm text-gray-600 line-clamp-2">{paper.description}</p>
+                      {paper.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {paper.description}
+                        </p>
+                      )}
 
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center">
@@ -440,10 +459,12 @@ export default function MockPapersSection() {
                             <span>{paper.rating}</span>
                           </div>
                         </div>
-                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </Button>
+                        <a href={paper.file_url} target="_blank" rel="noopener noreferrer">
+                          <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                            <Download className="w-4 h-4 mr-2" />
+                            Download
+                          </Button>
+                        </a>
                       </div>
                     </CardContent>
                   </Card>
@@ -455,7 +476,7 @@ export default function MockPapersSection() {
         {/* Results Summary */}
         <div className="mt-8 text-center">
           <p className="text-gray-600">
-            Showing {filteredPapers.length} of {mockPapers.length} papers
+            Showing {filteredPapers.length} of {allMockPapers.length} papers
           </p>
         </div>
       </div>

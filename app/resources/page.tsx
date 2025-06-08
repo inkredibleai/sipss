@@ -18,7 +18,7 @@ export default function ResourcesPage() {
       <MockPapersSection />
 
       {/* Career Guidance Section */}
-      <CareerGuidanceSection />
+      
 
       {/* Footer */}
    

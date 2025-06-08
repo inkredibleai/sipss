@@ -84,13 +84,13 @@ export default function AdminDashboard() {
                   <FileText className="w-4 h-4 mr-2" />
                   News & Articles
                 </TabsTrigger>
-                <TabsTrigger
+                {/* <TabsTrigger
                   value="media"
                   className="w-full justify-start data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700"
                 >
                   <ImageIcon className="w-4 h-4 mr-2" />
                   Media Gallery
-                </TabsTrigger>
+                </TabsTrigger> */}
                 <TabsTrigger
                   value="updates"
                   className="w-full justify-start data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700"

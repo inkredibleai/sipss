@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
+import { useState, useEffect } from "react" // Added useEffect
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,26 +13,30 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useToast } from "@/components/ui/use-toast" // Added useToast
 import { Plus, Upload, Edit, Trash2, Download, Search, FileText, Users, Eye, Star, Save, X } from "lucide-react"
 import Image from "next/image"
+// Mock Supabase queries - In a real app, these would be in a separate file e.g., @/lib/supabase/resource-queries.ts
 
 interface MockPaper {
-  id: number
+  id: string | number // Use string for UUID from DB, number for mock/new
   title: string
   subject: string
   class: string
   year: string
-  type: "mock" | "past"
+  type: "mock" | "past" // Corresponds to paper_type enum
   board: string
-  duration: string
-  marks: number
-  downloads: number
-  rating: number
-  difficulty: "Easy" | "Medium" | "Hard"
-  fileSize: string
-  uploadDate: string
-  description: string
-  fileUrl: string
+  duration: string | null
+  marks: number | null
+  difficulty: "Easy" | "Medium" | "Hard" | string | null
+  description: string | null
+  file_url: string // Not null
+  file_size: string | null
+  downloads: number | null
+  rating: number | null
+  status?: "active" | "inactive" | "archived" | string | null // Optional for form, but in DB
+  created_at?: string // Optional for form
+  uploadDate?: string // Derived/display field, not directly in DB as 'uploadDate'
 }
 
 interface CareerResource {
@@ -55,7 +59,7 @@ interface CareerResource {
 
 const initialMockPapers: MockPaper[] = [
   {
-    id: 1,
+    id: "mock-1", // Using string IDs for consistency with potential UUIDs
     title: "Mathematics Mock Test - 1",
     subject: "Mathematics",
     class: "12",
@@ -63,17 +67,19 @@ const initialMockPapers: MockPaper[] = [
     type: "mock",
     board: "CBSE",
     duration: "3 hours",
-    marks: 80,
+    marks: 80, // Mock data
     downloads: 1250,
     rating: 4.8,
     difficulty: "Medium",
-    fileSize: "2.4 MB",
+    file_size: "2.4 MB",
     uploadDate: "2024-03-15",
     description: "Comprehensive mathematics mock test covering all chapters",
-    fileUrl: "/papers/math-mock-1.pdf",
+    file_url: "/papers/math-mock-1.pdf",
+    status: "active",
+    created_at: "2024-03-15T00:00:00Z",
   },
   {
-    id: 2,
+    id: "mock-2",
     title: "Physics Previous Year Paper",
     subject: "Physics",
     class: "12",
@@ -81,14 +87,16 @@ const initialMockPapers: MockPaper[] = [
     type: "past",
     board: "CBSE",
     duration: "3 hours",
-    marks: 70,
+    marks: 70, // Mock data
     downloads: 2100,
     rating: 4.9,
     difficulty: "Hard",
-    fileSize: "1.8 MB",
+    file_size: "1.8 MB",
     uploadDate: "2024-03-12",
     description: "CBSE Class 12 Physics board exam paper 2023",
-    fileUrl: "/papers/physics-2023.pdf",
+    file_url: "/papers/physics-2023.pdf",
+    status: "active",
+    created_at: "2024-03-12T00:00:00Z",
   },
 ]
 
@@ -112,10 +120,13 @@ const initialCareerResources: CareerResource[] = [
 ]
 
 export default function ResourcesManager() {
+  const { toast } = useToast()
   const [mockPapers, setMockPapers] = useState<MockPaper[]>(initialMockPapers)
   const [careerResources, setCareerResources] = useState<CareerResource[]>(initialCareerResources)
   const [activeTab, setActiveTab] = useState("papers")
 
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   // Mock Papers State
   const [isPaperDialogOpen, setIsPaperDialogOpen] = useState(false)
   const [editingPaper, setEditingPaper] = useState<MockPaper | null>(null)
@@ -135,9 +146,10 @@ export default function ResourcesManager() {
     board: "",
     duration: "",
     marks: 0,
-    difficulty: "Medium" as const,
+    difficulty: "Medium" as "Easy" | "Medium" | "Hard",
     description: "",
-    fileUrl: "",
+    file_url: "",
+    file_size: "", // Add file_size to form
   })
 
   const [resourceFormData, setResourceFormData] = useState({
@@ -169,38 +181,74 @@ export default function ResourcesManager() {
   const boards = ["CBSE", "RBSE", "ICSE"]
   const careerCategories = ["Engineering", "Medical", "Commerce", "Arts", "Science", "Technology"]
 
-  // Mock Papers Functions
-  const handlePaperSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  // Simulate API calls
+  const fakeApiCall = (data?: any, delay = 500) => new Promise(resolve => setTimeout(() => resolve(data), delay));
 
-    if (editingPaper) {
-      setMockPapers(
-        mockPapers.map((paper) =>
-          paper.id === editingPaper.id
-            ? {
-                ...paper,
-                ...paperFormData,
-                uploadDate: new Date().toISOString().split("T")[0],
-                downloads: paper.downloads,
-                rating: paper.rating,
-                fileSize: "2.1 MB", // Mock file size
-              }
-            : paper,
-        ),
-      )
-    } else {
-      const newPaper: MockPaper = {
-        id: Date.now(),
-        ...paperFormData,
-        uploadDate: new Date().toISOString().split("T")[0],
-        downloads: 0,
-        rating: 0,
-        fileSize: "2.1 MB", // Mock file size
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true)
+      try {
+        // In a real app, replace these with actual API calls to your backend (e.g., Supabase)
+        // const papersData = await getMockPapersFromApi();
+        // const resourcesData = await getCareerResourcesFromApi();
+        // setMockPapers(papersData);
+        // setCareerResources(resourcesData);
+        await fakeApiCall(); // Simulate loading delay
+        setMockPapers(initialMockPapers) // Keep using initial for now
+        setCareerResources(initialCareerResources) // Keep using initial for now
+      } catch (error) {
+        toast({ title: "Error", description: "Failed to load resources.", variant: "destructive" })
+      } finally {
+        setIsLoading(false)
       }
-      setMockPapers([newPaper, ...mockPapers])
     }
+    loadData()
+  }, [toast])
 
-    resetPaperForm()
+  // Mock Papers Functions
+  const handlePaperSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      if (editingPaper) {
+        // await updateMockPaperInApi(editingPaper.id, paperFormData);
+        await fakeApiCall(paperFormData)
+        setMockPapers(
+          mockPapers.map((paper) =>
+            paper.id === editingPaper.id
+              ? {
+                  ...paper,
+                  ...paperFormData,
+                  uploadDate: new Date().toISOString().split("T")[0], // Keep mock logic for now
+                  file_size: paperFormData.file_size || "N/A", // Use from form or default
+                }
+              : paper,
+          ),
+        )
+        toast({ title: "Success", description: "Paper updated successfully." })
+      } else {
+        const newPaperData: MockPaper = {
+          ...paperFormData,
+          id: Date.now(), // Backend would generate ID
+          uploadDate: new Date().toISOString().split("T")[0],
+          downloads: 0,
+          rating: 0,
+          file_size: paperFormData.file_size || "N/A", // Use from form or default
+          status: "active", // Default status
+          created_at: new Date().toISOString(),
+        }
+        // const createdPaper = await createMockPaperInApi(newPaperData);
+        await fakeApiCall(newPaperData)
+        setMockPapers([newPaperData as MockPaper, ...mockPapers])
+        toast({ title: "Success", description: "Paper added successfully." })
+      }
+      resetPaperForm()
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to save paper.", variant: "destructive" })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const resetPaperForm = () => {
@@ -215,7 +263,8 @@ export default function ResourcesManager() {
       marks: 0,
       difficulty: "Medium",
       description: "",
-      fileUrl: "",
+      file_url: "",
+      file_size: "",
     })
     setEditingPaper(null)
     setIsPaperDialogOpen(false)
@@ -234,47 +283,69 @@ export default function ResourcesManager() {
       marks: paper.marks,
       difficulty: paper.difficulty,
       description: paper.description,
-      fileUrl: paper.fileUrl,
+      file_url: paper.file_url,
+      file_size: paper.file_size ?? "",
     })
     setIsPaperDialogOpen(true)
   }
 
-  const handleDeletePaper = (id: number) => {
-    setMockPapers(mockPapers.filter((paper) => paper.id !== id))
+  const handleDeletePaper = async (id: string | number) => {
+    // Optional: Add a confirmation dialog here
+    try {
+      // await deleteMockPaperFromApi(id);
+      await fakeApiCall()
+      setMockPapers(mockPapers.filter((paper) => paper.id !== id))
+      toast({ title: "Success", description: "Paper deleted successfully." })
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete paper.", variant: "destructive" })
+    }
   }
 
   // Career Resources Functions
-  const handleResourceSubmit = (e: React.FormEvent) => {
+  const handleResourceSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
 
-    if (editingResource) {
-      setCareerResources(
-        careerResources.map((resource) =>
-          resource.id === editingResource.id
-            ? {
-                ...resource,
-                ...resourceFormData,
-                tags: resourceFormData.tags.split(",").map((tag) => tag.trim()),
-                publishDate: new Date().toISOString().split("T")[0],
-                views: resource.views,
-                rating: resource.rating,
-              }
-            : resource,
-        ),
-      )
-    } else {
-      const newResource: CareerResource = {
-        id: Date.now(),
-        ...resourceFormData,
-        tags: resourceFormData.tags.split(",").map((tag) => tag.trim()),
-        publishDate: new Date().toISOString().split("T")[0],
-        views: 0,
-        rating: 0,
-      }
-      setCareerResources([newResource, ...careerResources])
+    const processedFormData = {
+      ...resourceFormData,
+      tags: resourceFormData.tags.split(",").map((tag) => tag.trim()),
     }
 
-    resetResourceForm()
+    try {
+      if (editingResource) {
+        // await updateCareerResourceInApi(editingResource.id, processedFormData);
+        await fakeApiCall(processedFormData)
+        setCareerResources(
+          careerResources.map((resource) =>
+            resource.id === editingResource.id
+              ? {
+                  ...resource,
+                  ...processedFormData,
+                  publishDate: new Date().toISOString().split("T")[0], // Keep mock logic
+                }
+              : resource,
+          ),
+        )
+        toast({ title: "Success", description: "Resource updated successfully." })
+      } else {
+        const newResourceData = {
+          ...processedFormData,
+          id: Date.now(), // Backend would generate ID
+          publishDate: new Date().toISOString().split("T")[0],
+          views: 0,
+          rating: 0,
+        }
+        // const createdResource = await createCareerResourceInApi(newResourceData);
+        await fakeApiCall(newResourceData)
+        setCareerResources([newResourceData as CareerResource, ...careerResources])
+        toast({ title: "Success", description: "Resource added successfully." })
+      }
+      resetResourceForm()
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to save resource.", variant: "destructive" })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const resetResourceForm = () => {
@@ -287,7 +358,7 @@ export default function ResourcesManager() {
       difficulty: "Beginner",
       tags: "",
       author: "",
-      thumbnail: "",
+      thumbnail: "", // This would be a URL from file upload
       downloadUrl: "",
       externalUrl: "",
     })
@@ -313,9 +384,18 @@ export default function ResourcesManager() {
     setIsResourceDialogOpen(true)
   }
 
-  const handleDeleteResource = (id: number) => {
-    setCareerResources(careerResources.filter((resource) => resource.id !== id))
+  const handleDeleteResource = async (id: number) => {
+    // Optional: Add a confirmation dialog here
+    try {
+      // await deleteCareerResourceFromApi(id);
+      await fakeApiCall()
+      setCareerResources(careerResources.filter((resource) => resource.id !== id))
+      toast({ title: "Success", description: "Resource deleted successfully." })
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete resource.", variant: "destructive" })
+    }
   }
+
 
   const filteredPapers = mockPapers.filter(
     (paper) =>
@@ -328,6 +408,10 @@ export default function ResourcesManager() {
       resource.title.toLowerCase().includes(resourceSearchTerm.toLowerCase()) ||
       resource.description.toLowerCase().includes(resourceSearchTerm.toLowerCase()),
   )
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-screen"><p>Loading resources...</p></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -362,7 +446,7 @@ export default function ResourcesManager() {
               </div>
               <Dialog open={isPaperDialogOpen} onOpenChange={setIsPaperDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-orange-600 hover:bg-orange-700">
+                  <Button className="bg-orange-600 hover:bg-orange-700" onClick={() => setEditingPaper(null)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Paper
                   </Button>
@@ -552,9 +636,9 @@ export default function ResourcesManager() {
                         <X className="w-4 h-4 mr-2" />
                         Cancel
                       </Button>
-                      <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+                      <Button type="submit" className="bg-orange-600 hover:bg-orange-700" disabled={isSubmitting}>
                         <Save className="w-4 h-4 mr-2" />
-                        {editingPaper ? "Update" : "Create"} Paper
+                        {isSubmitting ? "Saving..." : (editingPaper ? "Update Paper" : "Create Paper")}
                       </Button>
                     </div>
                   </form>
@@ -606,7 +690,7 @@ export default function ResourcesManager() {
                                       : paper.difficulty === "Medium"
                                         ? "bg-yellow-100 text-yellow-800"
                                         : "bg-red-100 text-red-800"
-                                  }
+                                  } // Add nullish coalescing for difficulty
                                 >
                                   {paper.difficulty}
                                 </Badge>
@@ -681,7 +765,7 @@ export default function ResourcesManager() {
               </div>
               <Dialog open={isResourceDialogOpen} onOpenChange={setIsResourceDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-green-600 hover:bg-green-700">
+                  <Button className="bg-green-600 hover:bg-green-700" onClick={() => setEditingResource(null)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Resource
                   </Button>
@@ -844,9 +928,9 @@ export default function ResourcesManager() {
                         <X className="w-4 h-4 mr-2" />
                         Cancel
                       </Button>
-                      <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                      <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={isSubmitting}>
                         <Save className="w-4 h-4 mr-2" />
-                        {editingResource ? "Update" : "Create"} Resource
+                        {isSubmitting ? "Saving..." : (editingResource ? "Update Resource" : "Create Resource")}
                       </Button>
                     </div>
                   </form>
@@ -985,3 +1069,4 @@ export default function ResourcesManager() {
     </div>
   )
 }
+ 
