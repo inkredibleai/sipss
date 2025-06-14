@@ -6,7 +6,7 @@ import { MessageCircle } from "lucide-react" // Using MessageCircle as a stand-i
 export function FloatingWhatsAppButton() {
   // Replace with your actual WhatsApp number (including country code) or channel link
   const whatsAppNumber = "911234567890" // Example: Indian number
-  const defaultMessage = "Hello Sunrise Edu Group, I have a question."
+  const defaultMessage = "Hello, I have a question about admissions."
   const whatsAppChannelLink = "https://whatsapp.com/channel/0029Vay5ok77DAWwFEhtwF2p";
 
 //   const whatsAppLink = `https://wa.me/${whatsAppNumber}?text=${encodeURIComponent(defaultMessage)}`

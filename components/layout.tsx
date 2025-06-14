@@ -12,14 +12,15 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const pathname = usePathname()
   const isAdminPage = pathname?.startsWith("/admin")
+  const isInstitutionPage = pathname?.startsWith("/institutions/")
 
   return (
     <div className="min-h-screen flex flex-col">
-      {!isAdminPage && <NavigationBar />}
-      <main className={`flex-grow ${!isAdminPage ? "pt-16" : ""}`}> {/* Adjust padding if navbar is absent */}
+      {!isAdminPage && !isInstitutionPage && <NavigationBar />}
+      <main className={`flex-grow ${!isAdminPage && !isInstitutionPage ? "pt-16" : ""}`}> {/* Adjust padding if navbar is absent */}
         {children}
       </main>
-      <Footer />
+      {!isAdminPage && !isInstitutionPage && <Footer />}
       <FloatingWhatsAppButton /> {/* Add the button here */}
     </div>
   )

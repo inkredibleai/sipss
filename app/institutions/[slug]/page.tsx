@@ -1,11 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { DynamicIcon } from "@/components/ui/dynamic-icon"
 import {
-  GraduationCap,
-  BookOpen,
-  Calculator,
-  Stethoscope,
   Award,
   Users,
   MapPin,
@@ -16,6 +13,7 @@ import {
   Clock,
   Star,
   Building,
+  Calendar
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -23,7 +21,47 @@ import { notFound } from "next/navigation"
 
 // Institution data mapping
 const institutionData = {
-  "international-public-school": {
+  "chs": {
+    id: "college",
+    name: "Sunrise College for Higher Studies",
+    shortName: "College for Higher Studies",
+    code: "CHS",
+    type: "College",
+    affiliation: "University Affiliated",
+    classes: "BA/B.Sc Programs",
+    icon: "graduation-cap",
+    color: "blue",
+    description:
+      "Comprehensive undergraduate education in Arts and Science streams with industry exposure, research opportunities, and career-oriented skill development.",
+    established: "2012",
+    students: "1500+",
+    successRate: "95% Pass Rate",
+    features: [
+      "Industry internships and placement support",
+      "Research projects and academic excellence programs",
+      "Modern laboratories and equipment",
+      "Experienced faculty with PhD qualifications",
+      "Career counseling and guidance",
+      "Digital library access",
+    ],
+    programs: [
+      { name: "Bachelor of Arts", classes: "3 Years", description: "Multiple specializations available" },
+      { name: "Bachelor of Science", classes: "3 Years", description: "PCM, PCB, Computer Science streams" },
+      { name: "Commerce Stream", classes: "3 Years", description: "Accounting, Economics, Business Studies" },
+    ],
+    facilities: [
+      "Modern Classrooms",
+      "Research Labs",
+      "Digital Library",
+      "Computer Center",
+      "Seminar Halls",
+      "Student Common Room",
+      "Placement Cell",
+      "Hostel Facility",
+    ],
+    achievements: ["95% Placement Record", "University Rank Holders", "Research Publications", "Industry Partnerships"],
+  },
+  "ips": {
     id: "school",
     name: "Sunrise International Public School",
     shortName: "International Public School",
@@ -31,7 +69,7 @@ const institutionData = {
     type: "School",
     affiliation: "CBSE Affiliated",
     classes: "Classes I-XII",
-    icon: BookOpen,
+    icon: "book-open",
     color: "orange",
     description:
       "Our flagship institution providing world-class CBSE education with a focus on academic excellence, character building, and holistic development of students.",
@@ -73,16 +111,16 @@ const institutionData = {
       "Excellence in Sports",
     ],
   },
-  "college-higher-studies": {
-    id: "college",
-    name: "Sunrise College for Higher Studies",
-    shortName: "College for Higher Studies",
-    code: "CHS",
-    type: "College",
-    affiliation: "University Affiliated",
-    classes: "BA/B.Sc Programs",
-    icon: GraduationCap,
-    color: "blue",
+  "pc": {
+    id: "pharmacy",
+    name: "Sunrise Pharmacy College",
+    shortName: "Pharmacy College",
+    code: "PC",
+    type: "Professional College",
+    affiliation: "PCI Approved",
+    classes: "D.Pharma/B.Pharma",
+    icon: "stethoscope",
+    color: "green",
     description:
       "Comprehensive undergraduate education in Arts and Science streams with industry exposure, research opportunities, and career-oriented skill development.",
     established: "2012",
@@ -113,15 +151,15 @@ const institutionData = {
     ],
     achievements: ["95% Placement Record", "University Rank Holders", "Research Publications", "Industry Partnerships"],
   },
-  "pharmacy-college": {
-    id: "pharmacy",
-    name: "Sunrise Pharmacy College",
-    shortName: "Pharmacy College",
-    code: "PC",
-    type: "Professional College",
-    affiliation: "PCI Approved",
+  "fa": {
+    id: "foundation",
+    name: "Sunrise Foundation Academy",
+    shortName: "Foundation Academy",
+    code: "FA",
+    type: "Coaching Institute",
+    affiliation: "Expert Coaching",
     classes: "D.Pharma/B.Pharma",
-    icon: Stethoscope,
+    icon: "stethoscope",
     color: "green",
     description:
       "Professional pharmacy education with state-of-the-art laboratories, clinical training, and industry partnerships to prepare competent healthcare professionals.",
@@ -161,7 +199,7 @@ const institutionData = {
     type: "Coaching Institute",
     affiliation: "Expert Coaching",
     classes: "IIT-JEE/NEET",
-    icon: Calculator,
+    icon: "calculator",
     color: "purple",
     description:
       "Specialized coaching institute for IIT-JEE, NEET, and other competitive examinations with expert faculty, proven methodologies, and outstanding results.",
@@ -215,7 +253,7 @@ export default async function InstitutionPage({ params }: PageProps) {
     notFound()
   }
 
-  const IconComponent = institution.icon
+  const iconName = institution.icon
   const colorClasses = {
     orange: {
       bg: "bg-orange-100",
@@ -252,12 +290,9 @@ export default async function InstitutionPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-    
-
-      {/* Breadcrumb */}
-      <div className="bg-gray-50 py-4">
+      {/* <div className="bg-white border-b">
         <div className="container mx-auto px-4">
-          <div className="flex items-center space-x-2 text-sm">
+          <div className="flex items-center space-x-2 py-4 text-sm">
             <Link href="/" className="text-gray-600 hover:text-orange-600">
               Home
             </Link>
@@ -269,7 +304,7 @@ export default async function InstitutionPage({ params }: PageProps) {
             <span className="text-gray-900">{institution.shortName}</span>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Hero Section */}
       <section className={`relative bg-gradient-to-r ${colors.gradient} py-20`}>
@@ -278,7 +313,7 @@ export default async function InstitutionPage({ params }: PageProps) {
             <div>
               <div className="flex items-center space-x-3 mb-6">
                 <div className={`w-20 h-20 ${colors.bg} rounded-full flex items-center justify-center`}>
-                  <IconComponent className={`w-10 h-10 ${colors.text}`} />
+                  <DynamicIcon name={institution.icon} className={`w-10 h-10 ${colors.text}`} />
                 </div>
                 <div>
                   <Badge className={`${colors.bg} ${colors.text} border-${institution.color}-200 mb-2`}>
@@ -341,7 +376,7 @@ export default async function InstitutionPage({ params }: PageProps) {
                 className="rounded-2xl shadow-2xl"
               />
               <div className={`absolute top-6 left-6 ${colors.bg} ${colors.text} p-4 rounded-xl`}>
-                <IconComponent className="w-8 h-8" />
+                <DynamicIcon name={institution.icon} className="w-8 h-8" />
               </div>
               <Badge
                 className={`absolute bottom-6 right-6 bg-white ${colors.text} border-${institution.color}-200 text-lg px-4 py-2`}
@@ -373,7 +408,7 @@ export default async function InstitutionPage({ params }: PageProps) {
                   <div
                     className={`w-16 h-16 ${colors.bg} rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
                   >
-                    <BookOpen className={`w-8 h-8 ${colors.text}`} />
+                    <DynamicIcon name="book-open" className={`w-8 h-8 ${colors.text}`} />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">{program.name}</h3>
                   <p className={`${colors.text} font-medium mb-3`}>{program.classes}</p>
@@ -537,10 +572,6 @@ export default async function InstitutionPage({ params }: PageProps) {
 }
 
 export async function generateStaticParams() {
-  return [
-    { slug: "international-public-school" },
-    { slug: "college-higher-studies" },
-    { slug: "pharmacy-college" },
-    { slug: "foundation-academy" },
-  ]
+  const slugs = Object.keys(institutionData)
+  return slugs.map((slug) => ({ slug }))
 }

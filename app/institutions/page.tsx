@@ -30,8 +30,8 @@ export default function InstitutionsPage() {
             <Badge className="bg-orange-100 text-orange-800 border-orange-200 mb-4">🏫 Our Educational Ecosystem</Badge>
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
               Four Pillars of
-              <span className="text-orange-600"> Educational</span>
-              <span className="text-blue-600"> Excellence</span>
+              <span className="text-orange-600"> Sunrise</span>
+              <span className="text-blue-600"> Group</span>
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
               From foundational learning to professional expertise, discover our comprehensive range of educational

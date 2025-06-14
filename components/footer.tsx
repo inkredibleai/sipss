@@ -12,7 +12,7 @@ export function Footer() {
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold">Sunrise Edu Group</h3>
+                <h3 className="text-lg font-bold">Education Excellence</h3>
                 <p className="text-xs text-gray-400">Igniting Futures</p>
               </div>
             </div>
@@ -108,7 +108,7 @@ export function Footer() {
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
           <p>
-            &copy; {new Date().getFullYear()} Sunrise Edu Group. All rights reserved. | Designed with{" "}
+            &copy; {new Date().getFullYear()} All rights reserved. | Designed with{" "}
             <span className="text-red-500">❤️</span> for Education
           </p>
         </div>

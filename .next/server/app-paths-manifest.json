@@ -1,7 +1,6 @@
 {
-  "/resources/page": "app/resources/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/admin/page": "app/admin/page.js",
   "/page": "app/page.js",
-  "/achievements/page": "app/achievements/page.js",
-  "/about/page": "app/about/page.js"
+  "/institutions/[slug]/page": "app/institutions/[slug]/page.js"
 }

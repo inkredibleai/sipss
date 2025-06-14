@@ -38,12 +38,6 @@ type NewCareerResource = Omit<CareerResource, 'id' | 'created_at' | 'views' | 'r
   rating?: number;
 }
 
-type CareerResource = Database['public']['Tables']['career_resources']['Row']
-type NewCareerResource = Omit<CareerResource, 'id' | 'created_at' | 'views' | 'rating'> & {
-  views?: number;
-  rating?: number;
-}
-
 const initialCareerResources: CareerResource[] = [];
 
 const careerCategories = [

@@ -1,17 +1,5 @@
 {
-  "node": {
-    "406593883da63ebed2d8ea7daabcc544e2317ffd0e": {
-      "workers": {
-        "app/admissions/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fmahendrabhamu%2FDocuments%2FNewWeb%2Fapp%2Fadmissions%2Faction.ts%22%2C%5B%7B%22id%22%3A%22406593883da63ebed2d8ea7daabcc544e2317ffd0e%22%2C%22exportedName%22%3A%22handleAdmissionSubmission%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": false
-        }
-      },
-      "layer": {
-        "app/admissions/page": "action-browser"
-      }
-    }
-  },
+  "node": {},
   "edge": {},
   "encryptionKey": "jRq5WSM8FRkpr6qhUxYG4/4Yc5o38kNctbUVdYA/HQc="
 }

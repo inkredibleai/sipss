@@ -14,7 +14,7 @@ import { Settings, Save, RefreshCw, Shield, Bell, Palette, Database, Mail, Globe
 export default function AdminSettings() {
   const [settings, setSettings] = useState({
     // General Settings
-    siteName: "Sunrise Edu Group",
+    siteName: "Education Portal",
     siteDescription: "Leading educational institution in Sikar, Rajasthan",
     contactEmail: "info@sunriseedu.com",
     contactPhone: "+91 98765 43210",

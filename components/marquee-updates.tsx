@@ -16,7 +16,11 @@ const typeBadgeMap: Record<string, { label: string; className: string }> = {
   default: { label: "Update", className: "bg-gray-100 text-gray-800" },
 }
 
-export function MarqueeUpdates() {
+interface MarqueeUpdatesProps {
+  institutionId?: string;
+}
+
+export function MarqueeUpdates({ institutionId }: MarqueeUpdatesProps) {
   const [updates, setUpdates] = useState<QuickUpdate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedUpdate, setSelectedUpdate] = useState<QuickUpdate | null>(null)
@@ -25,7 +29,7 @@ export function MarqueeUpdates() {
   useEffect(() => {
     async function loadUpdates() {
       try {
-        const data = await getQuickUpdates()
+        const data = await getQuickUpdates(institutionId)
         // Take a limited number of recent updates for the marquee
         setUpdates(data.slice(0, 10))
       } catch (error) {

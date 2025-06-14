@@ -16,7 +16,7 @@ export function NavigationBar() {
             <div className="w-10 h-10 md:w-12 md:h-12 transition-transform group-hover:scale-105">
               <img
                 src="/logo.png"
-                alt="Sunrise Edu Group Logo"
+                alt="Site Logo"
                 className="w-full h-full object-contain"
               />
             </div>

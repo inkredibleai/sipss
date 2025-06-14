@@ -84,7 +84,11 @@ export function InstitutionsSection({ institutions }: InstitutionsSectionProps) 
 
                 <div className="flex space-x-2">
                   <Button size="sm" className="flex-1" asChild>
-                    <Link href={`/institutions/${institution.code.toLowerCase()}`}>
+                    <Link 
+                      href={`/institutions/${institution.code.toLowerCase()}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <Building className="h-3 w-3 mr-1" />
                       View Details
                     </Link>

@@ -161,15 +161,25 @@ export async function incrementResourceViews(resourceId: string) {
 }
 
 // Quick Updates
-export async function getQuickUpdates() {
+export async function getQuickUpdates(institutionId?: string) {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from("quick_updates")
       .select("*")
       .eq("status", "active")
       .order("priority", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(10)
+    
+    if (institutionId) {
+      // For institution pages - show institution-specific updates and global updates marked to show_on_main
+      query = query.or(`institution_id.eq.${institutionId},and(show_on_main.eq.true)`)
+    } else {
+      // For main site - show updates with no institution_id or updates marked to show on main
+      query = query.or('institution_id.is.null,show_on_main.eq.true')
+    }
+
+    const { data, error } = await query
 
     if (error) {
       console.error("Error fetching quick updates:", error)
@@ -424,7 +434,17 @@ export async function deleteCareerResource(id: string) {
 
 export async function createQuickUpdate(update: Omit<QuickUpdate, "id" | "created_at" | "updated_at">) {
   try {
-    const { data, error } = await supabaseAdmin.from("quick_updates").insert(update).select().single()
+    // Convert institution_id to UUID if it exists
+    const formattedUpdate = {
+      ...update,
+      institution_id: update.institution_id ? update.institution_id : null
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("quick_updates")
+      .insert(formattedUpdate)
+      .select()
+      .single()
 
     if (error) {
       console.error("Error creating quick update:", error)
@@ -439,7 +459,18 @@ export async function createQuickUpdate(update: Omit<QuickUpdate, "id" | "create
 
 export async function updateQuickUpdate(id: string, updates: Partial<QuickUpdate>) {
   try {
-    const { data, error } = await supabaseAdmin.from("quick_updates").update(updates).eq("id", id).select().single()
+    // Convert institution_id to UUID if it exists
+    const formattedUpdates = {
+      ...updates,
+      institution_id: updates.institution_id ? updates.institution_id : null
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("quick_updates")
+      .update(formattedUpdates)
+      .eq("id", id)
+      .select()
+      .single()
 
     if (error) {
       console.error("Error updating quick update:", error)
